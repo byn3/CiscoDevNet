@@ -1,7 +1,7 @@
 import os
 import sys
 import logging
-import requests
+
 import cv2
 from keras.models import load_model
 import numpy as np
@@ -16,9 +16,7 @@ from utils.inference import load_image
 from utils.preprocessor import preprocess_input
 
 def process_image(image):
-    count=0
-    gender_texts=[]
-    emotion_texts=[]
+
     try:
         # parameters for loading data and images
         detection_model_path = './trained_models/detection_models/haarcascade_frontalface_default.xml'
@@ -52,7 +50,6 @@ def process_image(image):
 
         faces = detect_faces(face_detection, gray_image)
         for face_coordinates in faces:
-            count +=1
             x1, x2, y1, y2 = apply_offsets(face_coordinates, gender_offsets)
             rgb_face = rgb_image[y1:y2, x1:x2]
 
@@ -70,13 +67,13 @@ def process_image(image):
             gender_prediction = gender_classifier.predict(rgb_face)
             gender_label_arg = np.argmax(gender_prediction)
             gender_text = gender_labels[gender_label_arg]
-            gender_texts.extend(gender_text)
+
             gray_face = preprocess_input(gray_face, True)
             gray_face = np.expand_dims(gray_face, 0)
             gray_face = np.expand_dims(gray_face, -1)
             emotion_label_arg = np.argmax(emotion_classifier.predict(gray_face))
             emotion_text = emotion_labels[emotion_label_arg]
-            emotion_texts.extend(emotion_text)
+
             if gender_text == gender_labels[0]:
                 color = (0, 0, 255)
             else:
@@ -93,14 +90,5 @@ def process_image(image):
     dirname = 'result'
     if not os.path.exists(dirname):
         os.mkdir(dirname)
-    #cv2.imwrite(os.path.join(dirname, 'predicted_image.png'), bgr_image)
-    #logging.error("gender_texts:{0}".format(".".join(gender_texts)))
-    #logging.error("emotion_texts:{0}".format(".".join(emotion_texts)))
-    #logging.error("people count:{0}".format(count))
 
-
-    return count
-    
-"""
-    requests.post(os.getenv('WEB_MSG_RECEIVER', "http://localhost:9991/testmsg"), data ={'people':count,"genders":gender_texts,"emotions":emotion_texts})
-"""
+    cv2.imwrite(os.path.join(dirname, 'predicted_image.png'), bgr_image)

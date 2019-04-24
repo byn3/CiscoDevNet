@@ -13,8 +13,9 @@ def index():
 def upload():
     try:
         image = request.files['image'].read()
-        eg_processor.process_image(image)
-        return send_file('/ekholabs/face-classifier/result/predicted_image.png', mimetype='image/png')
+        count = eg_processor.process_image(image)
+        return jsonify({'count': count})
+        # return send_file('/ekholabs/face-classifier/result/predicted_image.png', mimetype='image/png')
     except Exception as err:
         logging.error('An error has occurred whilst processing the file: "{0}"'.format(err))
         abort(400)
